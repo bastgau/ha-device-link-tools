@@ -1,0 +1,188 @@
+[tool.poetry]
+authors = ["Bastien Gautier <contact@bastiengautier.com>"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Framework :: AsyncIO",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.14",
+]
+description = "Home Assistant custom integration to link existing entities to an existing device, for entities whose integration offers no device option. Links are recorded and re-applied, so they survive restarts and reloads."
+documentation = "https://github.com/bastgau/ha-device-link-tools"
+homepage = "https://github.com/bastgau/ha-device-link-tools"
+license = "MIT"
+maintainers = ["Bastien Gautier <contact@bastiengautier.com>"]
+name = "Device Link Tools"
+package-mode = false
+readme = "README.md"
+repository = "https://github.com/bastgau/ha-device-link-tools"
+version = "0.0.0"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/bastgau/ha-device-link-tools/issues"
+Changelog = "https://github.com/bastgau/ha-device-link-tools/releases"
+
+[tool.poetry.dependencies]
+# >=3.14.2 required transitively by homeassistant==2026.7.4
+# (pulled in by pytest-homeassistant-custom-component's dev dependency).
+python = ">=3.14.2,<3.15"
+
+[tool.poetry.group.dev.dependencies]
+docstring-linter = { url = "https://github.com/bastgau/docstring-linter/releases/download/v0.5.0/docstring_linter-0.5.0-py3-none-any.whl" }
+prek = "0.4.12"
+pylint = "4.0.6"
+pyright = "1.1.411"
+# pytest / pytest-asyncio versions are pinned by
+# pytest-homeassistant-custom-component's own exact requirements.
+pytest = "9.0.3"
+pytest-asyncio = "1.4.0"
+pytest-cov = "7.1.0"
+pytest-homeassistant-custom-component = "0.13.360"
+ruff = "0.16.2"
+
+[tool.ruff]
+# NOTE: runtime target is Python 3.14, but ruff's target-version is intentionally
+# pinned to py313 to avoid a known ruff 0.15.x formatter bug that rewrites
+# `except (A, B):` into the PEP 758 form `except A, B:` (invalid on Python <=3.13).
+# Bump back to "py314" once the ruff formatter fix ships.
+target-version = "py313"
+line-length = 120
+indent-width = 4
+src = ["custom_components/device_link_tools"]
+exclude = ["tests/testing_config/*", "tests/typing.py", "tests/common.py"]
+
+[tool.ruff.lint]
+ignore = [
+  "ANN401",  # Opiniated warning on disallowing dynamically typed expressions
+  "D203",    # Conflicts with other rules
+  "D213",    # Conflicts with other rules
+  "TID252",  # Relative imports
+  "RUF012",  # Just broken
+  "D202",    # No blank lines allowed after function docstring
+  "D404",    # First word of the docstring should not be This
+  "D406",    # Section name should end with a newline
+  "D407",    # Section name underlining
+  "D411",    # Missing blank line before section
+  "E501",    # line too long
+  "E731",    # do not assign a lambda expression, use a def
+  "PLR2004", # Magic value used in comparison, consider replacing `xxx` with a constant variable
+  "FBT001",  # Boolean default positional argument in function definition
+  "FBT002",  # Boolean-typed positional argument in function definition
+  "ARG002",  # Unused method argument: `kwargs`
+  "PLR0911", # Too many return statements (19 > 6)
+  "PLR0912", # Too many branches
+  "PLR0915", # Too many statements (58 > 50)
+  "BLE001",  # Do not catch blind exception: `Exception`
+  "S110",    # `try`-`except`-`pass` detected, consider logging the exception
+  "CPY001",  # No copyright header convention in this project
+
+  # Formatter conflicts
+  "COM812",
+  "COM819",
+  "D206",
+  "ISC001",
+  "Q000",
+  "Q001",
+  "Q002",
+  "Q003",
+  "W191",
+]
+select = ["ALL"]
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"homeassistant.helpers.area_registry" = "ar"
+"homeassistant.helpers.config_validation" = "cv"
+"homeassistant.helpers.device_registry" = "dr"
+"homeassistant.helpers.entity_registry" = "er"
+"homeassistant.helpers.issue_registry" = "ir"
+voluptuous = "vol"
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["homeassistant"]
+combine-as-imports = true
+
+[tool.ruff.lint.mccabe]
+max-complexity = 25
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+  "S101",    # Use of `assert` detected -- standard in pytest test bodies
+  "S105",    # Possible hardcoded password -- fixture credentials, not real secrets
+  "ARG001",  # Unused function argument
+  "ARG005",  # Unused lambda argument
+  "PLR0917", # Too many positional arguments
+  "PLR0913", # Too many arguments in function definition
+  "SLF001",  # Private member accessed"
+]
+
+[tool.pylint.MASTER]
+ignore-paths = ["(.*/)?tests/common.py", "(.*/)?tests/testing_config/.*"]
+load-plugins = ["pylint.extensions.docparams"]
+
+[tool.pylint."MESSAGES CONTROL"]
+# Reasons disabled:
+# format - handled by ruff
+# duplicate-code - unavoidable
+# used-before-assignment - false positives with TYPE_CHECKING structures
+# wrong-import-order - pylint has no equivalent to ruff's known-first-party;
+#   homeassistant is treated as first-party by ruff/isort (see [tool.ruff.lint.isort]),
+#   which pylint's import checker cannot be configured to match.
+disable = [
+  "abstract-method",
+  "duplicate-code",
+  "format",
+  "unexpected-keyword-arg",
+  "used-before-assignment",
+  "wrong-import-order",
+]
+max-args = 6
+max-positional-arguments = 6
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# pytest-homeassistant-custom-component's autouse fixture
+# `enable_event_loop_debug` is declared with @pytest.fixture despite being
+# async, which pytest-asyncio only tolerates in "auto" mode ("strict" raises
+# PytestRemovedIn9Warning: async fixture with no plugin/hook handling it).
+asyncio_mode = "auto"
+addopts = "--cov=custom_components/device_link_tools --cov-branch --cov-report=term-missing --cov-fail-under=95"
+
+[tool.coverage.run]
+source = ["custom_components/device_link_tools"]
+# VSCode's Python Testing extension invokes pytest with its own --cov=.
+# argument, overriding `source` above. `omit` still applies afterwards, so
+# it keeps tests/ out of the coverage report regardless of how pytest-cov
+# was invoked (scripts/test, VSCode, CI, ...).
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
+
+[tool.docstring-linter]
+style = "google"
+select = ["ALL"]
+ignore_placeholder_docstrings = false
+workers = 1
+summary_max_length = 120
+returns_none = "forbidden"
+exclude = ["testing_config", "tests/typing.py", "tests/common.py"]
+
+[[tool.docstring-linter.overrides]]
+ignore = ["imperative_mood"]
+paths = ["tests/*.py"]
+args_section = "forbidden"
+returns_section = "forbidden"
+yields_section = "forbidden"
+raises_section = "forbidden"
+attributes_section = "forbidden"
+description_section = "optional"
+examples_section = "forbidden"
+notes_section = "forbidden"
+todo_section = "forbidden"
+blank_lines_before_closing_quotes = 0
+
+[[tool.docstring-linter.overrides]]
+paths = ["custom_components/device_link_tools/*.py"]
+summary_max_length = 120

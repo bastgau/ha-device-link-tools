@@ -1,0 +1,18 @@
+# Minimal set the lint workflow needs (see .github/workflows/lint.yml).
+#
+# Deliberately not requirements.txt: that file also pins every dependency of
+# Home Assistant's default_config (ffmpeg, bluetooth, numpy, av...) so a local
+# `hass` can actually boot. None of it is reachable from this integration, and
+# installing it costs minutes of CI for nothing.
+#
+# homeassistant is missing on purpose too - pylint and pyright do need it to
+# resolve the integration's imports, but the workflow supplies it, pinned to
+# the release currently in production. Freezing a version here would mean
+# type-checking against one Home Assistant while the tests run against another.
+pylint==4.0.7
+pyright==1.1.411
+ruff==0.16.4
+
+# Not on PyPI: installed straight from its GitHub release, exactly as the
+# poetry dev group does (see pyproject.toml).
+docstring-linter @ https://github.com/bastgau/docstring-linter/releases/download/v0.9.0/docstring_linter-0.9.0-py3-none-any.whl

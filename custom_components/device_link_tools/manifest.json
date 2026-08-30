@@ -3,7 +3,7 @@
   "name": "Device Link Tools",
   "codeowners": ["@bastgau"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["repairs"],
   "documentation": "https://github.com/bastgau/ha-device-link-tools",
   "integration_type": "service",
   "iot_class": "calculated",

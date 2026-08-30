@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docstring-linter custom_components/device_link_tools/)",
+      "Bash(docstring-linter custom_components/device_link_tools/reapply.py)"
+    ]
+  }
+}

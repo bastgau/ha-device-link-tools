@@ -1,0 +1,15 @@
+{
+  "domain": "device_link_tools",
+  "name": "Device Link Tools",
+  "codeowners": ["@bastgau"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/bastgau/ha-device-link-tools",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/bastgau/ha-device-link-tools/issues",
+  "loggers": ["custom_components.device_link_tools"],
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

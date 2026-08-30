@@ -32,10 +32,6 @@ from .reapply import DeviceLinkToolsConfigEntry, async_apply_link, async_stored_
 
 _DEVICE_SELECTOR: Any = DeviceSelector()
 _ENTITY_SELECTOR: Any = EntitySelector(EntitySelectorConfig(multiple=True))
-# pyright: reportUnknownVariableType=false
-# pyright: reportUnknownMemberType=false
-# pyright: reportUnknownArgumentType=false
-# pyright: reportReturnType=false
 
 # Failures the add form can report on the field itself; anything else is reported as a
 # generic invalid device.

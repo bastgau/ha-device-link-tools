@@ -15,6 +15,10 @@
 
 Home Assistant custom integration to link existing entities to an existing device, for entities whose integration offers no device option. Links are recorded and re-applied, so they survive restarts and reloads.
 
+## Requirements
+
+Home Assistant 2026.9.0 or later. The integration resolves devices through device registry APIs that only exist from that release on, and refuses to start on an older one.
+
 ## Installation
 
 ### Installation via HACS

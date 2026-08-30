@@ -16,6 +16,9 @@
     "device_id_unknown": {
       "message": "There is no device with the id {device_id}."
     },
+    "device_is_child": {
+      "message": "{name} is a child device, and a link to one cannot be restored after a restart: a child device is only found through its parent, not by the identifiers the link is recorded with. Pick its parent device instead."
+    },
     "device_not_found": {
       "message": "No device matches the identifiers {identifiers}."
     },
@@ -76,6 +79,7 @@
     "error": {
       "device_id_composite": "That device was split between config entries. Pick one of the resulting devices.",
       "device_id_unknown": "That device no longer exists.",
+      "device_is_child": "That is a child device. A link to one could not be restored after a restart; pick its parent device instead.",
       "device_without_identifiers": "That device has no identifiers, so the link could not be restored after a restart.",
       "entity_not_registered": "One of the entities has no entity registry entry. An entity only gets one when its integration gives it a unique ID.",
       "invalid_device": "The entities could not be linked to that device.",

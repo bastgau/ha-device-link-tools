@@ -200,7 +200,7 @@ def async_resolve_device_id(hass: HomeAssistant, device_id: str) -> dr.DeviceEnt
         dr.DeviceEntry: The device entry.
 
     Raises:
-        ServiceValidationError: If the device is composite, unknown, or has no identifiers.
+        ServiceValidationError: If the device is composite, a child, unknown, or has no identifiers.
 
     """
     device_registry = dr.async_get(hass)
@@ -215,8 +215,18 @@ def async_resolve_device_id(hass: HomeAssistant, device_id: str) -> dr.DeviceEnt
             translation_placeholders={"device_id": device_id},
         )
 
-    device = device_registry.async_get(device_id)
+    # Child devices excluded: the entity registry accepts a link to one, but
+    # async_get_devices searches main devices only, so async_resolve_device could never
+    # find it again and the link would be dropped at the next restart. Refusing here is
+    # the same bargain as device_without_identifiers below.
+    device = device_registry.async_get(device_id, include_child_devices=False)
     if device is None:
+        if (child := device_registry.async_get(device_id)) is not None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="device_is_child",
+                translation_placeholders={"name": device_label(child, device_id)},
+            )
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="device_id_unknown",

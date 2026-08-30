@@ -38,6 +38,7 @@ _ENTITY_SELECTOR: Any = EntitySelector(EntitySelectorConfig(multiple=True))
 _FORM_ERRORS = {
     "device_id_composite",
     "device_id_unknown",
+    "device_is_child",
     "device_without_identifiers",
     "entity_not_registered",
     "link_set_elsewhere",

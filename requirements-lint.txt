@@ -11,7 +11,7 @@
 # type-checking against one Home Assistant while the tests run against another.
 pylint==4.0.7
 pyright==1.1.411
-ruff==0.16.2
+ruff==0.16.4
 
 # Not on PyPI: installed straight from its GitHub release, exactly as the
 # poetry dev group does (see pyproject.toml).

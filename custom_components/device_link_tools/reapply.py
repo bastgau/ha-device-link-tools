@@ -68,25 +68,23 @@ def async_options_with_links(entry: DeviceLinkToolsConfigEntry, links: dict[str,
 
 
 @callback
-def async_tracked_entities(hass: HomeAssistant, domain: str) -> set[str]:
+def async_tracked_entities(entry: DeviceLinkToolsConfigEntry) -> set[str]:
     """Return the entities whose device link this integration recorded.
 
     Args:
-        hass (HomeAssistant): The Home Assistant instance.
-        domain (str): The integration domain.
+        entry (DeviceLinkToolsConfigEntry): The config entry.
 
     Returns:
         set[str]: The entity IDs.
 
     """
-    if not (entries := hass.config_entries.async_loaded_entries(domain)):
-        return set()
-    return set(async_stored_links(entries[0]))
+    return set(async_stored_links(entry))
 
 
 @callback
 def _async_resolve_targets(
     hass: HomeAssistant,
+    config_entry: DeviceLinkToolsConfigEntry,
     entity_registry: er.EntityRegistry,
     entity_ids: list[str],
 ) -> list[str]:
@@ -101,6 +99,7 @@ def _async_resolve_targets(
 
     Args:
         hass (HomeAssistant): The Home Assistant instance.
+        config_entry (DeviceLinkToolsConfigEntry): The config entry.
         entity_registry (er.EntityRegistry): The entity registry.
         entity_ids (list[str]): The entity IDs to resolve.
 
@@ -111,7 +110,7 @@ def _async_resolve_targets(
         ServiceValidationError: If a link is set elsewhere.
 
     """
-    tracked = async_tracked_entities(hass, DOMAIN)
+    tracked = async_tracked_entities(config_entry)
     entries = [async_resolve_entry(entity_registry, entity_id) for entity_id in entity_ids]
 
     for entry in entries:
@@ -147,22 +146,38 @@ def async_apply_link(
     Returns:
         tuple[list[str], list[str]]: A tuple of (updated, unchanged) entity IDs.
 
+    Raises:
+        ServiceValidationError: If the config entry is not loaded.
+
     """
+    # Without the reapplier there is nowhere to record the link, and the actions stay
+    # registered while the entry is unloaded. Writing the registry anyway would report a
+    # success, lose the link at the next restart, and leave it looking like a link set
+    # elsewhere -- which both actions then refuse to touch. Refuse before writing.
+    if (reapplier := async_get_reapplier(hass, DOMAIN)) is None:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="entry_not_loaded",
+        )
+
     entity_registry = er.async_get(hass)
     device_id = device.id if device else None
-    resolved = _async_resolve_targets(hass, entity_registry, entity_ids)
+    resolved = _async_resolve_targets(hass, reapplier.entry, entity_registry, entity_ids)
 
     updated: list[str] = []
     unchanged: list[str] = []
-    for entity_id in resolved:
-        changed = async_set_device_link(entity_registry, entity_id, device_id)
-        (updated if changed else unchanged).append(entity_id)
-
-    if (reapplier := async_get_reapplier(hass, DOMAIN)) is not None:
-        if device is None:
-            reapplier.async_forget(resolved)
-        else:
-            reapplier.async_track(resolved, device.identifiers)
+    try:
+        for entity_id in resolved:
+            changed = async_set_device_link(entity_registry, entity_id, device_id)
+            (updated if changed else unchanged).append(entity_id)
+    finally:
+        # Record what was actually written, even if a later entity failed: a registry
+        # write this integration does not remember is one it can no longer undo.
+        if written := updated + unchanged:
+            if device is None:
+                reapplier.async_forget(written)
+            else:
+                reapplier.async_track(written, device.identifiers)
 
     return updated, unchanged
 

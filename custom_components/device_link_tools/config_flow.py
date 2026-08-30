@@ -41,6 +41,7 @@ _FORM_ERRORS = {
     "device_is_child",
     "device_without_identifiers",
     "entity_not_registered",
+    "entry_not_loaded",
     "link_set_elsewhere",
 }
 

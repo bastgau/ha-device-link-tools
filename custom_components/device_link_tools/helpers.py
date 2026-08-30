@@ -130,11 +130,11 @@ def async_resolve_entry(entity_registry: er.EntityRegistry, entity_id_or_uuid: s
     return entry
 
 
-def device_label(device: Any, device_id: str) -> str:
+def device_label(device: dr.AnyDeviceEntry | None, device_id: str) -> str:
     """Return the name to show for a device, falling back to its id.
 
     Args:
-        device (Any): The device entry or None.
+        device (dr.AnyDeviceEntry | None): The device entry or None.
         device_id (str): The device ID.
 
     Returns:
@@ -147,7 +147,7 @@ def device_label(device: Any, device_id: str) -> str:
 
 
 @callback
-def async_resolve_device(hass: HomeAssistant, identifiers: Identifiers) -> Any:
+def async_resolve_device(hass: HomeAssistant, identifiers: Identifiers) -> dr.DeviceEntry:
     """Resolve identifiers to the single device they designate.
 
     Args:
@@ -155,7 +155,7 @@ def async_resolve_device(hass: HomeAssistant, identifiers: Identifiers) -> Any:
         identifiers (Identifiers): The device identifiers.
 
     Returns:
-        Any: The device entry.
+        dr.DeviceEntry: The device entry.
 
     Raises:
         ServiceValidationError: If no device is found or multiple devices match.
@@ -185,8 +185,7 @@ def async_resolve_device(hass: HomeAssistant, identifiers: Identifiers) -> Any:
             },
         )
 
-    result: Any = matches[0]
-    return result
+    return matches[0]
 
 
 @callback

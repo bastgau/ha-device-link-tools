@@ -77,6 +77,7 @@
   },
   "options": {
     "abort": {
+      "no_linkable_entities": "Every registered entity is already linked to a device by its own integration, so there is nothing to link from here.",
       "no_links": "No entity is linked through Device Link Tools yet."
     },
     "error": {
@@ -98,7 +99,7 @@
         },
         "data_description": {
           "device_id": "The device the entities are linked to.",
-          "entity_id": "Entities to link to the device."
+          "entity_id": "Only entities linked to no device, and those already linked from here, are listed: a link an entity's own integration declares has to be changed at the source."
         },
         "description": "Pick the entities and the device they should appear under.",
         "title": "Link entities to a device"

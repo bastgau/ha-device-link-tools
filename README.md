@@ -65,14 +65,17 @@ Moving or removing such a link would look like it worked and be undone at the ne
 restart, so it is refused instead — change it where it comes from: the helper's device
 option, the MQTT discovery payload, and so on.
 
-The **Unlink entities** step of the options flow lists only the entities this integration
-recorded, for the same reason.
+Both options flow steps list only what they can act on, for the same reason: **Unlink
+entities** offers the entities this integration recorded, and **Link entities to a
+device** offers the entities linked to no device plus those same recorded ones, which it
+can re-point. An entity its own integration linked is never in the list.
 
 ### From the UI
 
 **Settings → Devices & services → Device Link Tools → Configure** offers the same two
-operations with pickers: _Link entities to a device_ (an entity picker and a device
-picker) and _Unlink entities_, which lists what is currently linked. This mirrors how the
+operations with pickers: _Link entities to a device_ (an entity picker restricted to the
+entities that can be linked, and a device picker) and _Unlink entities_, which lists what
+is currently linked. This mirrors how the
 template helper lets you pick a device, and writes to the same recorded links the actions
 use.
 

@@ -130,11 +130,11 @@ def async_resolve_entry(entity_registry: er.EntityRegistry, entity_id_or_uuid: s
     return entry
 
 
-def device_label(device: Any, device_id: str) -> str:
+def device_label(device: dr.AnyDeviceEntry | None, device_id: str) -> str:
     """Return the name to show for a device, falling back to its id.
 
     Args:
-        device (Any): The device entry or None.
+        device (dr.AnyDeviceEntry | None): The device entry or None.
         device_id (str): The device ID.
 
     Returns:
@@ -147,7 +147,7 @@ def device_label(device: Any, device_id: str) -> str:
 
 
 @callback
-def async_resolve_device(hass: HomeAssistant, identifiers: Identifiers) -> Any:
+def async_resolve_device(hass: HomeAssistant, identifiers: Identifiers) -> dr.DeviceEntry:
     """Resolve identifiers to the single device they designate.
 
     Args:
@@ -155,7 +155,7 @@ def async_resolve_device(hass: HomeAssistant, identifiers: Identifiers) -> Any:
         identifiers (Identifiers): The device identifiers.
 
     Returns:
-        Any: The device entry.
+        dr.DeviceEntry: The device entry.
 
     Raises:
         ServiceValidationError: If no device is found or multiple devices match.
@@ -185,8 +185,7 @@ def async_resolve_device(hass: HomeAssistant, identifiers: Identifiers) -> Any:
             },
         )
 
-    result: Any = matches[0]
-    return result
+    return matches[0]
 
 
 @callback
@@ -201,26 +200,37 @@ def async_resolve_device_id(hass: HomeAssistant, device_id: str) -> dr.DeviceEnt
         dr.DeviceEntry: The device entry.
 
     Raises:
-        ServiceValidationError: If the device is composite, unknown, or has no identifiers.
+        ServiceValidationError: If the device is composite, a child, unknown, or has no identifiers.
 
     """
     device_registry = dr.async_get(hass)
 
-    # True for a pre-migration composite id, False for a registered device, None for an
-    # unknown one. Check it first: async_get synthesizes a composite rather than
-    # returning None, and the entity registry then declines the link.
-    if device_registry.async_is_composite_device_id(device_id):
+    # Only a plain registered device can hold a durable link, so resolve with the other
+    # two kinds excluded and tell them apart afterwards:
+    #  - a composite is synthesized on demand for a pre-migration id, and the entity
+    #    registry silently declines an update pointing at one;
+    #  - a child device is accepted by the entity registry, but async_get_devices
+    #    searches main devices only, so async_resolve_device could never find it again
+    #    and the link would be dropped at the next restart.
+    device = device_registry.async_get(device_id, include_child_devices=False, include_composite_devices=False)
+    if device is None:
+        # async_get with every kind allowed: None here means the id is simply unknown.
+        other = device_registry.async_get(device_id)
+        if other is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="device_id_unknown",
+                translation_placeholders={"device_id": device_id},
+            )
+        if isinstance(other, dr.ChildDeviceEntry):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="device_is_child",
+                translation_placeholders={"name": device_label(other, device_id)},
+            )
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="device_id_composite",
-            translation_placeholders={"device_id": device_id},
-        )
-
-    device = device_registry.async_get(device_id)
-    if device is None:
-        raise ServiceValidationError(
-            translation_domain=DOMAIN,
-            translation_key="device_id_unknown",
             translation_placeholders={"device_id": device_id},
         )
 
@@ -259,7 +269,9 @@ def async_device_identifiers(hass: HomeAssistant, device_id: str) -> tuple[Ident
     if device is None:
         return set(), set(), None
     identifiers: Identifiers = device.identifiers or set()
-    connections: Identifiers = device.connections or set()  # pyright: ignore[reportAttributeAccessIssue]
+    # A child device has no connections at all: reading the attribute goes through a
+    # compatibility shim that returns an empty set and is removed in 2027.9.
+    connections: Identifiers = set() if isinstance(device, dr.ChildDeviceEntry) else device.connections or set()
     result: Any = (identifiers, connections, device.name_by_user or device.name)
     return result
 

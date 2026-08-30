@@ -31,6 +31,9 @@
     "entity_not_registered": {
       "message": "{entity_id} has no entity registry entry, so it cannot be linked to a device. An entity only gets one when its integration gives it a unique ID; add a unique_id to its configuration and reload it."
     },
+    "entry_not_loaded": {
+      "message": "Device Link Tools is not set up, so a link made now could not be recorded or restored. Enable or reload the Device Link Tools entry and try again."
+    },
     "identifiers_ambiguous": {
       "message": "Several devices match the identifiers {identifiers}: {devices}. Use identifiers that only one of them carries."
     },
@@ -82,6 +85,7 @@
       "device_is_child": "That is a child device. A link to one could not be restored after a restart; pick its parent device instead.",
       "device_without_identifiers": "That device has no identifiers, so the link could not be restored after a restart.",
       "entity_not_registered": "One of the entities has no entity registry entry. An entity only gets one when its integration gives it a unique ID.",
+      "entry_not_loaded": "Device Link Tools is not set up, so the link could not be recorded. Reload the entry and try again.",
       "invalid_device": "The entities could not be linked to that device.",
       "link_set_elsewhere": "One of the entities is linked to its device by something other than this integration, so that link cannot be changed from here.",
       "no_entity_selected": "Select at least one entity."

@@ -5,6 +5,7 @@
 import pytest
 
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import (
     device_registry as dr,
     entity_registry as er,
@@ -97,13 +98,17 @@ async def test_link_without_loaded_entry(
     entity_registry: er.EntityRegistry,
     device: dr.DeviceEntry,
 ) -> None:
-    """Test linking still works, without persistence, once the entry is unloaded."""
+    """Test linking is refused, and writes nothing, once the entry is unloaded."""
     assert await hass.config_entries.async_unload(config_entry.entry_id)
     await hass.async_block_till_done()
 
-    await async_link(hass, SOLAR_POWER, device)
+    with pytest.raises(ServiceValidationError) as err:
+        await async_link(hass, SOLAR_POWER, device)
 
-    assert entity_registry.async_get(SOLAR_POWER).device_id == device.id
+    # A link written here could not be recorded, so it would be lost at the next
+    # restart and refused as set elsewhere in the meantime.
+    assert err.value.translation_key == "entry_not_loaded"
+    assert entity_registry.async_get(SOLAR_POWER).device_id is None
     assert LINKS not in config_entry.options
 
 

@@ -372,6 +372,84 @@ async def test_add_identifier_refused_link(
     assert err.value.translation_key == "link_refused"
 
 
+@pytest.mark.usefixtures("entity_entry", "second_entity_entry")
+async def test_add_identifier_records_a_partial_write(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    entity_registry: er.EntityRegistry,
+    monkeypatch: pytest.MonkeyPatch,
+    device: dr.DeviceEntry,
+) -> None:
+    """Test the entities written before a failure are still recorded."""
+    original = er.EntityRegistry.async_update_entity
+
+    def _fail_on_second(self: er.EntityRegistry, entity_id: str, **kwargs: Any) -> Any:
+        if entity_id == GRID_IMPORT:
+            msg = "boom"
+            raise ValueError(msg)
+        return original(self, entity_id, **kwargs)
+
+    monkeypatch.setattr(er.EntityRegistry, "async_update_entity", _fail_on_second)
+
+    with pytest.raises(ServiceValidationError):
+        await hass.services.async_call(
+            DOMAIN,
+            "add_identifier",
+            {"entity_id": [SOLAR_POWER, GRID_IMPORT], "device_id": device.id},
+            blocking=True,
+        )
+
+    # The first entity was written to the registry, so it has to be recorded too:
+    # a link this integration does not remember is one it can no longer undo.
+    assert entity_registry.async_get(SOLAR_POWER).device_id == device.id
+    assert config_entry.options["links"] == {SOLAR_POWER: [["mqtt", "8848_5"]]}
+
+
+@pytest.mark.usefixtures("entity_entry", "second_entity_entry")
+async def test_add_identifier_records_nothing_when_the_first_write_fails(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    monkeypatch: pytest.MonkeyPatch,
+    device: dr.DeviceEntry,
+) -> None:
+    """Test nothing is recorded when no entity was written at all."""
+
+    def _reject(self: er.EntityRegistry, entity_id: str, **kwargs: Any) -> None:  # pylint: disable=unused-argument
+        msg = "boom"
+        raise ValueError(msg)
+
+    monkeypatch.setattr(er.EntityRegistry, "async_update_entity", _reject)
+
+    with pytest.raises(ServiceValidationError):
+        await hass.services.async_call(
+            DOMAIN,
+            "add_identifier",
+            {"entity_id": [SOLAR_POWER, GRID_IMPORT], "device_id": device.id},
+            blocking=True,
+        )
+
+    assert "links" not in config_entry.options
+
+
+async def test_add_identifier_without_entities(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    device: dr.DeviceEntry,
+) -> None:
+    """Test an empty entity list is a no-op that records nothing."""
+    response = await hass.services.async_call(
+        DOMAIN,
+        "add_identifier",
+        {"entity_id": [], "device_id": device.id},
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["updated"] == []
+    assert response["unchanged"] == []
+    assert "links" not in config_entry.options
+
+
 @pytest.mark.usefixtures("entity_entry")
 async def test_remove_identifier(
     hass: HomeAssistant,

@@ -9,9 +9,10 @@ if ! command -v uv > /dev/null 2>&1; then
   exit 1
 fi
 
-# --inexact: the devcontainer's default_config packages (av, numpy, Pillow...) are
-# installed on top of the lock by scripts/setup and must not be pruned - an exact
-# sync would remove them and scripts/develop would stop booting.
+# --inexact: the default-config group (av, numpy, Pillow...) is not a default
+# group, so an exact sync would prune whatever scripts/setup installed from it and
+# scripts/develop would stop booting. Syncing it here instead would make every
+# lint and test run pay for packages neither of them imports.
 # --frozen: running a check never rewrites uv.lock.
 uv sync --frozen --inexact --quiet || exit 1
 VIRTUAL_ENV="$PWD/.venv"

@@ -15,22 +15,15 @@ PROJECT=$PROJECT_NAME
 echo -e "\n${YELLOW}> Install requirements for HA Integration:${NC}\n"
 
 cd "$(dirname "$0")/.."
-uv sync
+
+# --group default-config adds Home Assistant's default_config dependencies
+# (ffmpeg, bluetooth, camera...), which scripts/develop needs to boot a real Home
+# Assistant. They are a non-default group, so the lint and test environments -
+# and CI - never pay for them.
+uv sync --group default-config
 
 if [ $? -ne 0 ]; then
     echo -e "\n${BLUE}[uv]${NC} ${RED}✗ uv failed to sync the environment.${NC}\n"
-    exit 1
-fi
-
-# Home Assistant's default_config integrations (ffmpeg, bluetooth, camera...) are
-# deliberately outside uv.lock: 42 heavy pins nothing in this repo imports, and
-# .devcontainer/ is out of Dependabot's reach. They go on top of the synced venv so
-# scripts/develop can boot a real Home Assistant. This has to run *after* uv sync,
-# which is exact and would remove them.
-uv pip install --python "$PWD/.venv/bin/python" --requirement .devcontainer/requirements-default-config.txt
-
-if [ $? -ne 0 ]; then
-    echo -e "\n${BLUE}[uv]${NC} ${RED}✗ uv failed to install the default_config requirements.${NC}\n"
     exit 1
 fi
 

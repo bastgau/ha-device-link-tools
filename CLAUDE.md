@@ -13,7 +13,7 @@ messages, README.
 ## Commands
 
 ```bash
-scripts/setup                               # uv sync, plus the default_config extras
+scripts/setup                               # uv sync, including the default-config group
 scripts/lint [integration|tests|repo|all]   # ruff check, ruff format, pylint, pyright, docstring-linter
 scripts/test                                # pytest with coverage
 scripts/develop                             # run Home Assistant against ./config
@@ -66,11 +66,14 @@ These were deliberate and cost real debugging. Do not undo them casually.
   re-asserting the same device is refused, because coincidence is not tracking.
 - **Re-application only fills an empty link**, never overwrites one the owning
   integration set.
-- **The `default_config` pins live outside `uv.lock`.** They are 42 heavy packages
-  (`av`, `numpy`, `Pillow`, `SQLAlchemy`…) that only `scripts/develop` needs, installed on
-  top of the synced venv by `scripts/setup`. A plain `uv sync` is exact and removes them,
-  which is why the scripts sync with `--inexact`, and why `scripts/setup` has to be re-run
-  after a bare `uv sync` before `scripts/develop` will boot.
+- **`default-config` is a non-default dependency group.** Its 43 pins (`av`, `numpy`,
+  `Pillow`, `SQLAlchemy`…) are what `scripts/develop` needs to boot a real Home Assistant,
+  and nothing else imports them, so lint, test and CI never install them. They are
+  generated from Home Assistant's own manifests by `scripts/update_requirements`, which
+  also rewrites the matching `ignore` list in `.github/dependabot.yml` and re-runs
+  `uv lock` — never edit the group by hand. Because the group is not a default one, a
+  plain `uv sync` prunes it: the scripts sync with `--inexact` to avoid that, and
+  `scripts/setup` is what puts it back.
 
 ## Error messages
 

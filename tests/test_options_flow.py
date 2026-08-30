@@ -107,6 +107,25 @@ async def test_remove_link(
     assert config_entry.options[LINKS] == {}
 
 
+@pytest.mark.usefixtures("entity_entry")
+async def test_remove_link_without_selection(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    device: dr.DeviceEntry,
+) -> None:
+    """Test the remove step re-shows the form when nothing is selected."""
+    await async_link(hass, SOLAR_POWER, device)
+
+    flow_id = await _async_menu(hass, config_entry)
+    await hass.config_entries.options.async_configure(flow_id, {"next_step_id": "remove_link"})
+
+    result = await hass.config_entries.options.async_configure(flow_id, {"entity_id": []})
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "remove_link"
+    assert result["errors"] == {"base": "no_entity_selected"}
+
+
 async def test_remove_link_without_links(hass: HomeAssistant, config_entry: MockConfigEntry) -> None:
     """Test the remove step aborts when nothing is linked."""
     flow_id = await _async_menu(hass, config_entry)

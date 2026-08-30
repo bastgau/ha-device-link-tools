@@ -163,9 +163,14 @@ class DeviceLinkToolsOptionsFlow(OptionsFlowWithReload):
         if not links:
             return self.async_abort(reason="no_links")
 
+        errors: dict[str, str] = {}
         if user_input is not None:
-            async_apply_link(self.hass, user_input[ATTR_ENTITY_ID], None)
-            return self.async_create_entry(data=dict(self.config_entry.options))
+            entity_ids = user_input[ATTR_ENTITY_ID]
+            if not entity_ids:
+                errors["base"] = "no_entity_selected"
+            else:
+                async_apply_link(self.hass, entity_ids, None)
+                return self.async_create_entry(data=dict(self.config_entry.options))
 
         selector: Any = SelectSelector(
             SelectSelectorConfig(
@@ -176,5 +181,6 @@ class DeviceLinkToolsOptionsFlow(OptionsFlowWithReload):
         )
         return self.async_show_form(
             step_id="remove_link",
-            data_schema=vol.Schema({vol.Required(ATTR_ENTITY_ID): selector}),
+            data_schema=vol.Schema({vol.Optional(ATTR_ENTITY_ID, default=[]): selector}),
+            errors=errors,
         )

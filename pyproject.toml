@@ -1,3 +1,45 @@
+[project]
+# Not a distributable package: this is a HACS custom component, shipped as a zip
+# built by .github/workflows/release.yml from custom_components/. The name is the
+# PEP 508 form of the integration's title.
+name = "device-link-tools"
+version = "0.0.0"
+description = "Link existing entities to an existing device, for entities whose own integration offers no device option."
+readme = "README.md"
+# >=3.14.2 is homeassistant==2026.9.0b3's own Requires-Python; the upper bound keeps
+# the lock inside a single minor. The exact patch lives in .python-version.
+requires-python = ">=3.14.2,<3.15"
+# Home Assistant is a project dependency rather than a group member: scripts/develop
+# runs it, and pylint and pyright need it to resolve the integration's imports
+# against the very release the tests run against.
+dependencies = ["homeassistant==2026.9.0b3"]
+
+[dependency-groups]
+# Installed by a bare `uv sync`: everything a developer needs.
+dev = ["prek==0.5.0", { include-group = "lint" }, { include-group = "test" }]
+
+lint = [
+  "pylint==4.0.7",
+  "pyright==1.1.411",
+  # Keep in sync with the ruff-pre-commit rev in .pre-commit-config.yaml, so the
+  # hook and scripts/lint can never format a file differently.
+  "ruff==0.16.4",
+  # Not on PyPI: installed straight from its GitHub release asset.
+  "docstring-linter @ https://github.com/bastgau/docstring-linter/releases/download/v0.9.0/docstring_linter-0.9.0-py3-none-any.whl",
+]
+
+# pytest, pytest-asyncio, pytest-cov and coverage are pinned exactly by
+# pytest-homeassistant-custom-component's own requirements - do not repeat them.
+test = ["pytest-homeassistant-custom-component==0.13.360"]
+
+[tool.uv]
+# Older uv ignores PEP 735 groups and cannot download CPython 3.14.
+required-version = ">=0.9"
+# Mirrors poetry's package-mode = false: install the dependencies, never build or
+# install custom_components/ itself.
+package = false
+default-groups = ["dev"]
+
 [tool.ruff]
 # NOTE: runtime target is Python 3.14, but ruff's target-version is intentionally
 # pinned to py313 to avoid a known ruff 0.15.x formatter bug that rewrites

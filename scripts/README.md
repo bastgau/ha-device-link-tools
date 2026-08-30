@@ -3,20 +3,24 @@
 Every script resolves the repository root from its own location, so it can be run from
 anywhere and the repo does not have to sit at `/workspaces/<project>`.
 
-| Script                | What it does                                  | Modifies files                                        |
-| --------------------- | --------------------------------------------- | ----------------------------------------------------- |
-| `setup`               | Installs the dev environment                  | yes — outside the repo (`~/.vimrc`, global npm)       |
-| `lint`                | Runs the five CI checks, plus Prettier        | yes — the `repo` scope reformats in place             |
-| `test`                | Runs pytest with coverage                     | no                                                    |
-| `develop`             | Starts Home Assistant against `./config`      | yes — `./config` (gitignored)                         |
-| `update_requirements` | Regenerates the `default_config` requirements | yes — `.devcontainer/requirements-default-config.txt` |
+| Script                | What it does                                  | Modifies files                                                 |
+| --------------------- | --------------------------------------------- | -------------------------------------------------------------- |
+| `setup`               | Installs the dev environment                  | yes — `./.venv`, and outside the repo (`~/.vimrc`, global npm) |
+| `lint`                | Runs the five CI checks, plus Prettier        | yes — the `repo` scope reformats in place                      |
+| `test`                | Runs pytest with coverage                     | no                                                             |
+| `develop`             | Starts Home Assistant against `./config`      | yes — `./config` (gitignored)                                  |
+| `update_requirements` | Regenerates the `default_config` requirements | yes — `.devcontainer/requirements-default-config.txt`          |
 
 ## `scripts/setup`
 
 Installs everything needed to work on the integration:
 
-- the four requirement files (`requirements.txt`, `-lint`, `-test`, and the devcontainer's
-  `requirements-default-config.txt`);
+- `uv sync`, which builds `./.venv` from `uv.lock` — downloading the interpreter named in
+  `.python-version` if it is not already there — and then, on top of it,
+  `.devcontainer/requirements-default-config.txt`, whose pins are deliberately outside the
+  lock. **The order matters**: `uv sync` is exact and removes anything the lock does not
+  list, so the extras have to go in afterwards. Run `scripts/setup` again after any bare
+  `uv sync`, or `scripts/develop` will fail to boot on a missing `av`/`numpy`;
 - Prettier **globally via npm**, pinned to the same version as
   `.pre-commit-config.yaml`, so the hook and `scripts/lint` can never format a file
   differently. Skipped if npm is missing — `scripts/lint` then falls back to `npx`, and
@@ -67,7 +71,7 @@ path generally needs a new test.
 To run a single test while iterating, call pytest directly:
 
 ```bash
-python -m pytest tests/test_services.py -q -o addopts=""   # -o addopts="" drops the coverage gate
+uv run --frozen pytest tests/test_services.py -q -o addopts=""   # -o addopts="" drops the coverage gate
 ```
 
 ## `scripts/develop`
@@ -84,8 +88,18 @@ This script walks the manifests reachable from `default_config` (following `depe
 and `after_dependencies`), collects their `requirements`, and rewrites the generated block
 in `.devcontainer/requirements-default-config.txt`.
 
-Run it **whenever `homeassistant` is upgraded**, review the diff, then run
-`scripts/setup` to install what changed.
+Run it **whenever `homeassistant` is upgraded**, as:
+
+```bash
+uv run --frozen python scripts/update_requirements
+```
+
+It imports the _installed_ `homeassistant`, so it has to run under the venv's interpreter —
+its `#!/usr/bin/env python3` shebang picks the system one, which has no Home Assistant.
+Review the diff, then run `scripts/setup` to install what changed. Pay particular
+attention to packages that also appear in `uv.lock` (several `default_config` pins are
+Home Assistant dependencies too): installing them on top of the sync would silently
+override a locked version.
 
 The file is kept separate from the root `requirements.txt` so these pins stay out of
 Dependabot's scans. Only the block below the auto-generated marker is rewritten; the

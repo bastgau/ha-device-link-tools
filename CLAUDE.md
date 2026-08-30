@@ -13,10 +13,16 @@ messages, README.
 ## Commands
 
 ```bash
+scripts/setup                               # uv sync, plus the default_config extras
 scripts/lint [integration|tests|repo|all]   # ruff check, ruff format, pylint, pyright, docstring-linter
 scripts/test                                # pytest with coverage
 scripts/develop                             # run Home Assistant against ./config
 ```
+
+Dependencies live in `pyproject.toml` (`[project]` plus the `lint`, `test` and `dev`
+groups) and are locked in `uv.lock`; `.python-version` pins the interpreter, which uv
+downloads. The scripts sync the environment themselves, so none of them needs an
+activated venv — but they need `uv` on `PATH`.
 
 CI runs the same five checks over two scopes (`custom_components/device_link_tools/*.py`
 and `tests`). `scripts/lint` predicts CI: run it before saying work is done. Coverage
@@ -24,7 +30,8 @@ must stay above 95% (`--cov-fail-under=95`).
 
 See **[scripts/README.md](scripts/README.md)** for every script, its scopes and its side
 effects — notably that `scripts/lint repo` reformats files in place, and that
-`scripts/update_requirements` has to be re-run whenever `homeassistant` is upgraded.
+`scripts/update_requirements` has to be re-run (as
+`uv run --frozen python scripts/update_requirements`) whenever `homeassistant` is upgraded.
 
 ## Commits
 
@@ -59,6 +66,11 @@ These were deliberate and cost real debugging. Do not undo them casually.
   re-asserting the same device is refused, because coincidence is not tracking.
 - **Re-application only fills an empty link**, never overwrites one the owning
   integration set.
+- **The `default_config` pins live outside `uv.lock`.** They are 42 heavy packages
+  (`av`, `numpy`, `Pillow`, `SQLAlchemy`…) that only `scripts/develop` needs, installed on
+  top of the synced venv by `scripts/setup`. A plain `uv sync` is exact and removes them,
+  which is why the scripts sync with `--inexact`, and why `scripts/setup` has to be re-run
+  after a bare `uv sync` before `scripts/develop` will boot.
 
 ## Error messages
 

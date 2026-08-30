@@ -61,4 +61,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: DeviceLinkToolsConfigEn
         bool: True if unload was successful.
 
     """
+    # Nothing to tear down by hand: the reapplier registers both of its listeners
+    # through entry.async_on_unload, and Home Assistant drops runtime_data itself.
     return True

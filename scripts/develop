@@ -4,7 +4,23 @@ set -e
 
 cd "$(dirname "$0")/.."
 
-# Create config dir if not present
+if ! command -v uv > /dev/null 2>&1; then
+  echo "uv not found - install it (https://docs.astral.sh/uv/) or rebuild the devcontainer." >&2
+  exit 1
+fi
+
+# --inexact: the devcontainer's default_config packages (av, numpy, Pillow...) are
+# installed on top of the lock by scripts/setup and must not be pruned - an exact
+# sync would remove them and scripts/develop would stop booting.
+# --frozen: running a check never rewrites uv.lock.
+uv sync --frozen --inexact --quiet || exit 1
+VIRTUAL_ENV="$PWD/.venv"
+export VIRTUAL_ENV
+PATH="$VIRTUAL_ENV/bin:$PATH"
+export PATH
+
+# Create config dir if not present. Booting needs the default_config packages
+# scripts/setup installs on top of the lock; run it again if hass fails to start.
 if [[ ! -d "${PWD}/config" ]]; then
     mkdir -p "${PWD}/config"
     hass --config "${PWD}/config" --script ensure_config

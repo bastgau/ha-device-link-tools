@@ -152,6 +152,44 @@ async def test_add_identifier_device_without_identifiers(
     assert err.value.translation_key == "device_without_identifiers"
 
 
+@pytest.mark.parametrize(
+    "field",
+    [
+        pytest.param("device_id", id="picked_by_id"),
+        pytest.param("source_entity_id", id="taken_from_a_source_entity"),
+    ],
+)
+@pytest.mark.usefixtures("entity_entry", "second_entity_entry")
+async def test_add_identifier_child_device(
+    hass: HomeAssistant,
+    device_registry: dr.DeviceRegistry,
+    entity_registry: er.EntityRegistry,
+    owning_entry: MockConfigEntry,
+    device: dr.DeviceEntry,
+    field: str,
+) -> None:
+    """Test a child device cannot hold a link, since only its parent is searchable."""
+    child = device_registry.async_get_or_create_child(
+        config_entry_id=owning_entry.entry_id,
+        identifiers={("mqtt", "8848_5_burner")},
+        parent_device_id=device.id,
+        name="Burner",
+    )
+    entity_registry.async_update_entity(SOLAR_POWER, device_id=child.id)
+    designations = {"device_id": child.id, "source_entity_id": SOLAR_POWER}
+
+    with pytest.raises(ServiceValidationError) as err:
+        await hass.services.async_call(
+            DOMAIN,
+            "add_identifier",
+            {"entity_id": GRID_IMPORT, field: designations[field]},
+            blocking=True,
+        )
+
+    assert err.value.translation_key == "device_is_child"
+    assert entity_registry.async_get(GRID_IMPORT).device_id is None
+
+
 @pytest.mark.usefixtures("entity_entry", "second_entity_entry")
 async def test_add_identifier_multiple_entities(
     hass: HomeAssistant,

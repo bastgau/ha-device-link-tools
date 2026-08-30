@@ -9,7 +9,7 @@
 # resolve the integration's imports, but the workflow supplies it, pinned to
 # the release currently in production. Freezing a version here would mean
 # type-checking against one Home Assistant while the tests run against another.
-pylint==4.0.6
+pylint==4.0.7
 pyright==1.1.411
 ruff==0.16.2
 

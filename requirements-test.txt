@@ -1,0 +1,2 @@
+# What the Home Assistant side's tests need (see .github/workflows/test.yml).
+pytest-homeassistant-custom-component==0.13.360

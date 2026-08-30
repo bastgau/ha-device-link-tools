@@ -1,0 +1,4 @@
+PROJECT_NAME=ha-device-link-tools
+PROJECT_ROOT_PATH=/workspaces/ha-device-link-tools
+INTEGRATION_DOMAIN=ha-device_link_tools
+INTEGRATION_NAME=Device Link Tools

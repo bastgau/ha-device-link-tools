@@ -46,6 +46,9 @@
     "source_not_linked": {
       "message": "{entity_id} is not linked to any device, so there is no device to copy."
     },
+    "unsupported_ha_version": {
+      "message": "Device Link Tools needs Home Assistant {minimum_version} or later, but this is {version}. Upgrade Home Assistant."
+    },
     "update_failed": {
       "message": "Could not update {entity_id}: {error}"
     }

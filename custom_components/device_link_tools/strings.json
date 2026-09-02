@@ -79,10 +79,6 @@
     }
   },
   "options": {
-    "abort": {
-      "no_linkable_entities": "Every registered entity is already linked to a device by its own integration, so there is nothing to link from here.",
-      "no_links": "No entity is linked through Device Link Tools yet."
-    },
     "error": {
       "device_id_composite": "That device was split between config entries. Pick one of the resulting devices.",
       "device_id_unknown": "That device no longer exists.",
@@ -90,9 +86,9 @@
       "device_without_identifiers": "That device has no identifiers, so the link could not be restored after a restart.",
       "entity_not_registered": "One of the entities has no entity registry entry. An entity only gets one when its integration gives it a unique ID.",
       "entry_not_loaded": "Device Link Tools is not set up, so the link could not be recorded. Reload the entry and try again.",
+      "incomplete_link": "Pick both the entities and the device, or submit the form empty to go back.",
       "invalid_device": "The entities could not be linked to that device.",
-      "link_set_elsewhere": "One of the entities is linked to its device by something other than this integration, so that link cannot be changed from here.",
-      "no_entity_selected": "Select at least one entity."
+      "link_set_elsewhere": "One of the entities is linked to its device by something other than this integration, so that link cannot be changed from here."
     },
     "step": {
       "add_link": {
@@ -102,15 +98,17 @@
         },
         "data_description": {
           "device_id": "The device the entities are linked to.",
-          "entity_id": "Only entities linked to no device, and those already linked from here, are listed: a link an entity's own integration declares has to be changed at the source."
+          "entity_id": "Only entities linked to no device are listed: a link an entity's own integration declares has to be changed at the source, and one recorded here is left out to keep this list short."
         },
-        "description": "Pick the entities and the device they should appear under.",
+        "description": "Pick the entities and the device they should appear under. Submit the form empty to go back without linking.",
         "title": "Link entities to a device"
       },
       "init": {
         "menu_options": {
           "add_link": "Link entities to a device",
-          "remove_link": "Unlink entities"
+          "exit": "Done",
+          "remove_link": "Unlink entities",
+          "remove_orphans": "Clean up unresolved links"
         },
         "title": "Device Link Tools"
       },
@@ -118,11 +116,15 @@
         "data": {
           "entity_id": "Entities"
         },
-        "data_description": {
-          "entity_id": "Entities to unlink from their device."
-        },
-        "description": "Pick the entities that should no longer be linked.",
+        "description": "Pick the entities that should no longer be linked. Leave everything unticked to go back without unlinking.",
         "title": "Unlink entities"
+      },
+      "remove_orphans": {
+        "data": {
+          "entity_id": "Unresolved links"
+        },
+        "description": "These entities were linked from here, but their device can no longer be found: it was removed, or its identifiers changed. Dropping a link stops it from being re-applied and clears its repair notice. Leave everything unticked to go back without dropping any. To point one at another device instead, use its repair notice under Settings > Repairs.",
+        "title": "Clean up unresolved links"
       }
     }
   },

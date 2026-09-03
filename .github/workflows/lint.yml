@@ -10,9 +10,6 @@ on:
 
 permissions: {}
 
-env:
-  PYTHON_VERSION: "3.14"
-
 jobs:
   changes:
     name: "changes"
@@ -30,8 +27,9 @@ jobs:
             python:
               - "custom_components/device_link_tools/**/*.py"
               - "tests/**/*.py"
-              - "requirements-lint.txt"
+              - "uv.lock"
               - "pyproject.toml"
+              - ".python-version"
               - ".github/workflows/lint.yml"
 
   lint:
@@ -46,27 +44,33 @@ jobs:
         include:
           - name: "integration"
             paths: "custom_components/device_link_tools/*.py"
-            extra_requirements: ""
+            groups: "--group lint"
           - name: "tests"
             paths: "tests"
-            extra_requirements: "-r requirements-test.txt"
+            groups: "--group lint --group test"
 
     steps:
       - name: "Check out the repository"
         uses: "actions/checkout@v7"
 
-      - name: "Set up Python"
-        uses: "actions/setup-python@v7"
+      # No setup-python: uv provisions the interpreter from .python-version and
+      # the requires-python bound in pyproject.toml.
+      - name: "Set up uv"
+        uses: "astral-sh/setup-uv@v7"
         with:
-          python-version: "${{ env.PYTHON_VERSION }}"
-          cache: "pip"
-          cache-dependency-path: |
-            requirements-lint.txt
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
+      # --locked fails the job if uv.lock is stale, which is the freshness check.
+      # --no-default-groups keeps each leg to its own groups; the dev group would
+      # otherwise install everything on both and collapse the matrix.
       - name: "Install the lint toolchain"
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-lint.txt -r requirements.txt ${{ matrix.extra_requirements }}
+        run: "uv sync --locked --no-default-groups ${{ matrix.groups }}"
+
+      # Put the synced venv on PATH so the checks below stay bare commands,
+      # identical to the ones scripts/lint runs.
+      - name: "Expose the virtualenv"
+        run: 'echo "$PWD/.venv/bin" >> "$GITHUB_PATH"'
 
       - name: "Lint with Ruff"
         if: "success()"

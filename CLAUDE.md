@@ -13,10 +13,16 @@ messages, README.
 ## Commands
 
 ```bash
+scripts/setup                               # uv sync, including the default-config group
 scripts/lint [integration|tests|repo|all]   # ruff check, ruff format, pylint, pyright, docstring-linter
 scripts/test                                # pytest with coverage
 scripts/develop                             # run Home Assistant against ./config
 ```
+
+Dependencies live in `pyproject.toml` (`[project]` plus the `lint`, `test` and `dev`
+groups) and are locked in `uv.lock`; `.python-version` pins the interpreter, which uv
+downloads. The scripts sync the environment themselves, so none of them needs an
+activated venv — but they need `uv` on `PATH`.
 
 CI runs the same five checks over two scopes (`custom_components/device_link_tools/*.py`
 and `tests`). `scripts/lint` predicts CI: run it before saying work is done. Coverage
@@ -24,7 +30,8 @@ must stay above 95% (`--cov-fail-under=95`).
 
 See **[scripts/README.md](scripts/README.md)** for every script, its scopes and its side
 effects — notably that `scripts/lint repo` reformats files in place, and that
-`scripts/update_requirements` has to be re-run whenever `homeassistant` is upgraded.
+`scripts/update_requirements` has to be re-run (as
+`uv run --frozen python scripts/update_requirements`) whenever `homeassistant` is upgraded.
 
 ## Commits
 
@@ -59,6 +66,14 @@ These were deliberate and cost real debugging. Do not undo them casually.
   re-asserting the same device is refused, because coincidence is not tracking.
 - **Re-application only fills an empty link**, never overwrites one the owning
   integration set.
+- **`default-config` is a non-default dependency group.** Its 43 pins (`av`, `numpy`,
+  `Pillow`, `SQLAlchemy`…) are what `scripts/develop` needs to boot a real Home Assistant,
+  and nothing else imports them, so lint, test and CI never install them. They are
+  generated from Home Assistant's own manifests by `scripts/update_requirements`, which
+  also rewrites the matching `ignore` list in `.github/dependabot.yml` and re-runs
+  `uv lock` — never edit the group by hand. Because the group is not a default one, a
+  plain `uv sync` prunes it: the scripts sync with `--inexact` to avoid that, and
+  `scripts/setup` is what puts it back.
 
 ## Error messages
 

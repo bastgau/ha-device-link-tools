@@ -22,6 +22,22 @@ NC='\033[0m' # No Color
 
 cd "$(dirname "$0")/.." || exit 1
 
+if ! command -v uv > /dev/null 2>&1; then
+  echo "uv not found - install it (https://docs.astral.sh/uv/) or rebuild the devcontainer." >&2
+  exit 1
+fi
+
+# --inexact: the default-config group (av, numpy, Pillow...) is not a default
+# group, so an exact sync would prune whatever scripts/setup installed from it and
+# scripts/develop would stop booting. Syncing it here instead would make every
+# lint and test run pay for packages neither of them imports.
+# --frozen: running a check never rewrites uv.lock.
+uv sync --frozen --inexact --quiet || exit 1
+VIRTUAL_ENV="$PWD/.venv"
+export VIRTUAL_ENV
+PATH="$VIRTUAL_ENV/bin:$PATH"
+export PATH
+
 # Resolved from the script's own location rather than $PROJECT_NAME: the repo no longer has to sit at /workspaces/<project> for this to work.
 scope_paths() {
   case "$1" in

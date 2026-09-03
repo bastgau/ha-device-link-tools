@@ -15,14 +15,19 @@ PROJECT=$PROJECT_NAME
 echo -e "\n${YELLOW}> Install requirements for HA Integration:${NC}\n"
 
 cd "$(dirname "$0")/.."
-python3 -m pip install --requirement requirements.txt --requirement requirements-lint.txt --requirement requirements-test.txt --requirement .devcontainer/requirements-default-config.txt
+
+# --group default-config adds Home Assistant's default_config dependencies
+# (ffmpeg, bluetooth, camera...), which scripts/develop needs to boot a real Home
+# Assistant. They are a non-default group, so the lint and test environments -
+# and CI - never pay for them.
+uv sync --group default-config
 
 if [ $? -ne 0 ]; then
-    echo -e "\n${BLUE}[pip]${NC} ${RED}✗ Pip failed to install dependencies.${NC}\n"
+    echo -e "\n${BLUE}[uv]${NC} ${RED}✗ uv failed to sync the environment.${NC}\n"
     exit 1
 fi
 
-echo -e "\n${BLUE}[pip]${NC} ${GREEN}✓ Done."
+echo -e "\n${BLUE}[uv]${NC} ${GREEN}✓ Done."
 
 
 echo -e "\n${YELLOW}> Install Prettier (scripts/lint repo):${NC}\n"

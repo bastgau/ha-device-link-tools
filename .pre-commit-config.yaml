@@ -4,7 +4,9 @@
 # GitHub Actions (see .github/workflows/), not here.
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.2
+    # Keep in sync with the ruff pin in [dependency-groups] lint in pyproject.toml,
+    # so the hook and scripts/lint cannot format the same file differently.
+    rev: v0.16.4
     hooks:
       - id: ruff-check
         args:
@@ -17,7 +19,10 @@ repos:
     hooks:
       - id: docstring-linter
         name: docstring-linter
-        entry: docstring-linter
+        # language: system resolves the entry from PATH, and the tool now lives in
+        # the uv-managed .venv. uv run finds it there without the venv having to be
+        # activated; --frozen keeps the hook from rewriting uv.lock mid-commit.
+        entry: uv run --frozen docstring-linter
         language: system
 
   - repo: https://github.com/pre-commit/pre-commit-hooks

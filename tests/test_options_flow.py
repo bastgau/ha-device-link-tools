@@ -573,7 +573,6 @@ async def test_add_link_form_keeps_its_placeholders(hass: HomeAssistant, config_
 async def test_add_link_keeps_what_was_filled_in_on_error(
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
-    device: dr.DeviceEntry,
 ) -> None:
     """Test a rejected submission comes back with the fields still filled in.
 

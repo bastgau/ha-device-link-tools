@@ -2,4 +2,4 @@
 # Default_config requirements moved to .devcontainer/requirements-default-config.txt
 # to exclude them from Dependabot's scan (not relevant to the integration itself).
 homeassistant==2026.9.4
-prek==0.5.3
+prek==0.5.4

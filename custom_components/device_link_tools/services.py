@@ -7,7 +7,7 @@
 
 from typing import Any
 
-import voluptuous as vol
+import probatio
 
 from homeassistant.const import ATTR_DEVICE_ID, ATTR_ENTITY_ID, ATTR_NAME
 from homeassistant.core import (
@@ -46,20 +46,20 @@ from .helpers import (
 )
 from .reapply import async_apply_link
 
-ENTITY_IDS: Any = vol.All(cv.ensure_list, cv.entity_ids_or_uuids)
+ENTITY_IDS: Any = probatio.All(cv.ensure_list, cv.entity_ids_or_uuids)
 
-READ_IDENTIFIERS_SCHEMA = vol.Schema({vol.Required(ATTR_ENTITY_ID): cv.entity_id_or_uuid})
+READ_IDENTIFIERS_SCHEMA = probatio.Schema({probatio.Required(ATTR_ENTITY_ID): cv.entity_id_or_uuid})
 
-ADD_IDENTIFIER_SCHEMA = vol.Schema(
+ADD_IDENTIFIER_SCHEMA = probatio.Schema(
     {
-        vol.Required(ATTR_ENTITY_ID): ENTITY_IDS,
-        vol.Exclusive(ATTR_IDENTIFIERS, "device"): parse_identifiers,
-        vol.Exclusive(ATTR_DEVICE_ID, "device"): cv.string,
-        vol.Exclusive(ATTR_SOURCE_ENTITY_ID, "device"): cv.entity_id_or_uuid,
+        probatio.Required(ATTR_ENTITY_ID): ENTITY_IDS,
+        probatio.Exclusive(ATTR_IDENTIFIERS, "device"): parse_identifiers,
+        probatio.Exclusive(ATTR_DEVICE_ID, "device"): cv.string,
+        probatio.Exclusive(ATTR_SOURCE_ENTITY_ID, "device"): cv.entity_id_or_uuid,
     }
 )
 
-REMOVE_IDENTIFIER_SCHEMA = vol.Schema({vol.Required(ATTR_ENTITY_ID): ENTITY_IDS})
+REMOVE_IDENTIFIER_SCHEMA = probatio.Schema({probatio.Required(ATTR_ENTITY_ID): ENTITY_IDS})
 
 
 async def async_read_identifiers(call: ServiceCall) -> ServiceResponse:

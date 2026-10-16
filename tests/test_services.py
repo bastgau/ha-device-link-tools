@@ -6,8 +6,8 @@
 
 from typing import Any
 
+import probatio
 import pytest
-import voluptuous as vol
 
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.exceptions import (
@@ -318,7 +318,7 @@ async def test_service_validation_error(  # pylint: disable=too-many-positional-
 @pytest.mark.usefixtures("entity_entry")
 async def test_add_identifier_invalid_input(hass: HomeAssistant, identifiers: Any) -> None:
     """Test malformed identifiers are rejected by the schema."""
-    with pytest.raises(vol.Invalid):
+    with pytest.raises(probatio.Invalid):
         await hass.services.async_call(
             DOMAIN,
             "add_identifier",

@@ -7,9 +7,10 @@ DOMAIN = "device_link_tools"
 LOGGER = logging.getLogger(__package__)
 
 # Devices are resolved through async_get(include_child_devices=..., include_composite_devices=...)
-# and dr.ChildDeviceEntry, none of which exist before 2026.9. On an older core the
-# integration would import or fail mid-action, so refuse to set up instead.
-MINIMUM_HA_VERSION = (2026, 9)
+# and dr.ChildDeviceEntry, none of which exist before 2026.9, and schemas are built with
+# probatio, which Home Assistant only types its schema APIs against from 2026.10. On an
+# older core the integration would import or fail mid-action, so refuse to set up instead.
+MINIMUM_HA_VERSION: tuple[int, int] = (2026, 10)
 
 SERVICE_ADD_IDENTIFIER = "add_identifier"
 SERVICE_READ_IDENTIFIERS = "read_identifiers"

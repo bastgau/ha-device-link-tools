@@ -8,7 +8,7 @@
 from collections.abc import Mapping
 from typing import Any
 
-import voluptuous as vol
+import probatio
 
 from homeassistant.const import CONF_DOMAIN
 from homeassistant.core import HomeAssistant, callback
@@ -37,7 +37,7 @@ def parse_identifier(value: Any) -> tuple[str, str]:
         domain, separator, identifier = value.partition(":")
         if not separator or not domain or not identifier:
             raise_msg = f"expected an identifier of the form 'domain:identifier', got {value!r}"
-            raise vol.Invalid(raise_msg)
+            raise probatio.Invalid(raise_msg)
         return (domain, identifier)
 
     if isinstance(value, Mapping):
@@ -46,18 +46,18 @@ def parse_identifier(value: Any) -> tuple[str, str]:
         if domain is None or identifier is None:
             keys = sorted(str(key) for key in value)
             msg = f"expected a mapping with the keys 'domain' and 'identifier', got {keys}"
-            raise vol.Invalid(msg)
+            raise probatio.Invalid(msg)
         return (str(domain), str(identifier))
 
     if isinstance(value, (list, tuple)):
         value_len = len(value)
         if value_len != 2:
             msg = f"expected an identifier of exactly 2 items, got {value_len}"
-            raise vol.Invalid(msg)
+            raise probatio.Invalid(msg)
         return (str(value[0]), str(value[1]))
 
     raise_msg = f"invalid device identifier: {value!r}"
-    raise vol.Invalid(raise_msg)
+    raise probatio.Invalid(raise_msg)
 
 
 def parse_identifiers(value: Any) -> Identifiers:
@@ -76,7 +76,7 @@ def parse_identifiers(value: Any) -> Identifiers:
     items: list[Any] = value if isinstance(value, list) else [value]
     if not (identifiers := {parse_identifier(item) for item in items}):
         raise_msg = "expected at least one device identifier"
-        raise vol.Invalid(raise_msg)
+        raise probatio.Invalid(raise_msg)
     return identifiers
 
 

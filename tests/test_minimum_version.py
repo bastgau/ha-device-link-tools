@@ -14,16 +14,16 @@ from .conftest import DOMAIN
 MODULE = f"custom_components.{DOMAIN}"
 
 # The guard compares (MAJOR_VERSION, MINOR_VERSION) against MINIMUM_HA_VERSION, so both
-# sides of 2026.9 have to be covered, including the year rollover a plain minor
+# sides of 2026.10 have to be covered, including the year rollover a plain minor
 # comparison would get wrong.
 TOO_OLD = [
-    pytest.param(2026, 8, id="one-release-before"),
+    pytest.param(2026, 9, id="one-release-before"),
     pytest.param(2026, 1, id="same-year-first-release"),
     pytest.param(2025, 12, id="previous-year-later-minor"),
 ]
 SUPPORTED = [
-    pytest.param(2026, 9, id="exactly-the-minimum"),
-    pytest.param(2026, 10, id="one-release-after"),
+    pytest.param(2026, 10, id="exactly-the-minimum"),
+    pytest.param(2026, 11, id="one-release-after"),
     pytest.param(2027, 1, id="next-year-first-release"),
 ]
 
@@ -45,7 +45,7 @@ async def test_setup_refused_on_older_core(
         await hass.async_block_till_done()
 
     assert not hass.services.has_service(DOMAIN, "add_identifier")
-    assert "2026.9 or later" in caplog.text
+    assert "2026.10 or later" in caplog.text
 
 
 @pytest.mark.parametrize(("major", "minor"), SUPPORTED)

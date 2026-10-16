@@ -7,7 +7,7 @@
 
 from typing import Any, override
 
-import voluptuous as vol
+import probatio
 
 from homeassistant.config_entries import (
     ConfigFlow,
@@ -284,14 +284,14 @@ class DeviceLinkToolsOptionsFlow(OptionsFlowWithReload):
                     return self._async_menu()
 
         entity_selector: Any = EntitySelector(EntitySelectorConfig(multiple=True, include_entities=entity_ids))
-        schema = vol.Schema(
+        schema = probatio.Schema(
             {
                 # No default: a marker carrying one reads as already filled in to the
                 # frontend, which then drops the field's own placeholder. What the user
                 # did fill in comes back as a suggested value instead, which repopulates
                 # the field without claiming the empty one has a value.
-                vol.Optional(ATTR_ENTITY_ID): entity_selector,
-                vol.Optional(ATTR_DEVICE_ID): _DEVICE_SELECTOR,
+                probatio.Optional(ATTR_ENTITY_ID): entity_selector,
+                probatio.Optional(ATTR_DEVICE_ID): _DEVICE_SELECTOR,
             }
         )
         return self.async_show_form(
@@ -331,7 +331,7 @@ class DeviceLinkToolsOptionsFlow(OptionsFlowWithReload):
         )
         return self.async_show_form(
             step_id="remove_link",
-            data_schema=vol.Schema({vol.Optional(ATTR_ENTITY_ID, default=[]): selector}),
+            data_schema=probatio.Schema({probatio.Optional(ATTR_ENTITY_ID, default=[]): selector}),
         )
 
     async def async_step_remove_orphans(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
@@ -363,5 +363,5 @@ class DeviceLinkToolsOptionsFlow(OptionsFlowWithReload):
         )
         return self.async_show_form(
             step_id="remove_orphans",
-            data_schema=vol.Schema({vol.Optional(ATTR_ENTITY_ID, default=[]): selector}),
+            data_schema=probatio.Schema({probatio.Optional(ATTR_ENTITY_ID, default=[]): selector}),
         )

@@ -4,8 +4,8 @@
 
 from typing import Any
 
+import probatio
 import pytest
-import voluptuous as vol
 
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType, InvalidData
@@ -566,14 +566,13 @@ async def test_add_link_form_keeps_its_placeholders(hass: HomeAssistant, config_
     result = await hass.config_entries.options.async_configure(flow_id, {"next_step_id": "add_link"})
 
     for marker in result["data_schema"].schema:
-        assert marker.default is vol.UNDEFINED, f"{marker} carries a default"
+        assert marker.default is probatio.UNDEFINED, f"{marker} carries a default"
 
 
 @pytest.mark.usefixtures("entity_entry")
 async def test_add_link_keeps_what_was_filled_in_on_error(
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
-    device: dr.DeviceEntry,
 ) -> None:
     """Test a rejected submission comes back with the fields still filled in.
 
@@ -593,4 +592,4 @@ async def test_add_link_keeps_what_was_filled_in_on_error(
         if marker.description
     }
     assert suggested == {"entity_id": [SOLAR_POWER], "device_id": "does-not-exist"}
-    assert all(marker.default is vol.UNDEFINED for marker in result["data_schema"].schema)
+    assert all(marker.default is probatio.UNDEFINED for marker in result["data_schema"].schema)

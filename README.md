@@ -17,7 +17,7 @@ Home Assistant custom integration to link existing entities to an existing devic
 
 ## Requirements
 
-Home Assistant 2026.9.0 or later. The integration resolves devices through device registry APIs that only exist from that release on, and refuses to start on an older one.
+Home Assistant 2026.10.0 or later. The integration relies on device registry APIs and on probatio-based schema validation that only exist together from that release on, and refuses to start on an older one.
 
 ## Installation
 

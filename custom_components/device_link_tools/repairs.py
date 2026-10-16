@@ -7,7 +7,7 @@
 
 from typing import Any
 
-import voluptuous as vol
+import probatio
 
 from homeassistant.components.repairs import RepairsFlow, RepairsFlowResult
 from homeassistant.const import ATTR_DEVICE_ID
@@ -84,7 +84,7 @@ class UnresolvedLinkRepairFlow(RepairsFlow):
 
         return self.async_show_form(
             step_id="select_device",
-            data_schema=vol.Schema({vol.Optional(ATTR_DEVICE_ID): _DEVICE_SELECTOR}),
+            data_schema=probatio.Schema({probatio.Optional(ATTR_DEVICE_ID): _DEVICE_SELECTOR}),
             description_placeholders={"entity_id": self._entity_id},
             errors=errors,
         )

@@ -1,10 +1,17 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: 🐞 Bug report
+description: Report an issue
+about: Use this template for tracking a bug.
 title: ""
-labels: ""
-assignees: ""
+labels: ["issue:bug", "issue:triage"]
+assignees: []
 ---
+
+**Home Assistant version:**
+Please specify your Home Assistant version.
+
+**Device Link Tools Integration version:**
+Please specify your integration version.
 
 **Describe the bug**
 A clear and concise description of what the bug is.
@@ -14,9 +21,6 @@ A clear and concise description of what you expected to happen.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
-
-**Home Assistant version:**
-Please specify your Home Assistant version.
 
 **Additional context**
 Add any other context about the problem here.

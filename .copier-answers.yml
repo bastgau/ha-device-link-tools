@@ -1,17 +1,16 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: v0.1.0
+_commit: v0.2.0
 _src_path: gh:bastgau/ha-dev-environment
-client_package: ""
-description:
-  Home Assistant custom integration to link existing entities to an existing
-  device, for entities whose integration offers no device option. Links are recorded
-  and re-applied, so they survive restarts and reloads.
+client_package: ''
+description: Home Assistant custom integration to link existing entities to an existing
+    device, for entities whose integration offers no device option. Links are recorded
+    and re-applied, so they survive restarts and reloads.
 ha_testing_config: true
 integration_domain: device_link_tools
 integration_name: Device Link Tools
 lenient_tests: true
 prettier_excludes: card
-python_requires: ">=3.14.2,<3.15"
-python_version: "3.14"
+python_requires: '>=3.14.2,<3.15'
+python_version: '3.14'
 repo_name: ha-device-link-tools
 strict_docstrings: true

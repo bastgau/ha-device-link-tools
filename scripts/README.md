@@ -1,92 +1,51 @@
 # Development scripts
 
-Every script resolves the repository root from its own location, so it can be run from
-anywhere and the repo does not have to sit at `/workspaces/<project>`.
+Managed by [ha-dev-environment](https://github.com/bastgau/ha-dev-environment): change them there, then run `copier update`.
 
-| Script                | What it does                                  | Modifies files                                        |
-| --------------------- | --------------------------------------------- | ----------------------------------------------------- |
-| `setup`               | Installs the dev environment                  | yes — outside the repo (`~/.vimrc`, global npm)       |
-| `lint`                | Runs the five CI checks, plus Prettier        | yes — the `repo` scope reformats in place             |
-| `test`                | Runs pytest with coverage                     | no                                                    |
-| `develop`             | Starts Home Assistant against `./config`      | yes — `./config` (gitignored)                         |
-| `update_requirements` | Regenerates the `default_config` requirements | yes — `.devcontainer/requirements-default-config.txt` |
+Every script resolves the repository root from its own location and reads the project variables (integration domain, optional bundled client, Prettier exclusions) from `.devcontainer/.common-env`, so it can be run from anywhere.
 
-## `scripts/setup`
+| Script                | What it does                                      | Modifies files                                         |
+| --------------------- | ------------------------------------------------- | ------------------------------------------------------ |
+| `setup`               | Builds the development environment                | yes — `.venv`, `~/.vimrc`, global npm                  |
+| `lint`                | Runs the five CI checks, plus Prettier            | yes — the `repo` scope reformats in place              |
+| `test`                | Runs pytest with the coverage gates               | no                                                     |
+| `develop`             | Starts Home Assistant against `./config`          | yes — `./config` (gitignored)                          |
+| `update_requirements` | Regenerates the `default_config` requirements     | yes — `.devcontainer/requirements-default-config.txt`  |
+| `clean_bruno_headers` | Strips noisy response headers from Bruno examples | yes — the client's `bruno/*.bru` (none with `--check`) |
 
-Installs everything needed to work on the integration:
+`_common` is sourced by the others; it is not meant to be run.
 
-- the four requirement files (`requirements.txt`, `-lint`, `-test`, and the devcontainer's
-  `requirements-default-config.txt`);
-- Prettier **globally via npm**, pinned to the same version as
-  `.pre-commit-config.yaml`, so the hook and `scripts/lint` can never format a file
-  differently. Skipped if npm is missing — `scripts/lint` then falls back to `npx`, and
-  the pre-commit hook is unaffected;
-- a `~/.vimrc` with Python-friendly defaults, if you don't already have one.
+## `setup`
 
-The last two touch your machine, not the repository.
+`uv sync` (the groups declared in `pyproject.toml`), then the `default_config` packages on top. Those are kept out of `uv.lock` on purpose: they only exist so a local `hass` can boot, and tracking them would flood Dependabot. The consequence is that **every other script runs `uv run --no-sync`** — a sync would uninstall them. Also installs Prettier globally (pinned to the pre-commit hook's version) and a `~/.vimrc`.
 
-> Note: `prettier-plugin-sort-json` is deliberately **not** installed, even though
-> `.pre-commit-config.yaml` lists it. Nothing passes `--plugin` and the repo has no
-> `.prettierrc`, so the hook never loads it either. Enabling it would sort every JSON key
-> alphabetically and scramble `strings.json`, whose block order Home Assistant relies on.
-
-## `scripts/lint`
+## `lint`
 
 ```bash
 scripts/lint [scope ...]     # default: all
 ```
 
-| Scope         | Paths                                      | Checks                                                     |
-| ------------- | ------------------------------------------ | ---------------------------------------------------------- |
-| `integration` | `custom_components/device_link_tools/*.py` | ruff check, ruff format, pylint, pyright, docstring-linter |
-| `tests`       | `tests/`                                   | same five                                                  |
-| `repo`        | `**/*.{json,yaml,yml,md}`, minus `card/`   | Prettier                                                   |
-| `all`         | all three                                  | everything                                                 |
+| Scope         | Paths                                                   | Checks                                                     |
+| ------------- | ------------------------------------------------------- | ---------------------------------------------------------- |
+| `client`      | `custom_components/<domain>/<client>` (if there is one) | ruff check, ruff format, pylint, pyright, docstring-linter |
+| `integration` | `custom_components/<domain>/*.py`                       | same five                                                  |
+| `tests`       | `tests/`                                                | same five                                                  |
+| `repo`        | `**/*.{json,yaml,yml,md}` minus the excluded folders    | Prettier (**writes**)                                      |
 
-The five Python checks and the two Python scopes are exactly what
-`.github/workflows/lint.yml` runs, so **a green run here predicts a green CI run**. Run
-it before considering work finished.
+`.github/workflows/lint.yml` asks `scripts/lint --list-scopes` which scopes exist, so **a green run here predicts a green CI run** by construction. Every check runs even after one fails.
 
-Two things to know:
-
-- **The `repo` scope runs Prettier with `--write`**: it reformats your JSON, YAML and
-  Markdown in place rather than only reporting. Everything else is read-only.
-- Every check runs even after one fails, so a single invocation reports every problem at
-  once. The exit code is non-zero if any of them failed.
-
-`card/` is excluded to match the pre-commit hook: it is reserved for a vendored
-third-party file meant to stay diffable against upstream (currently empty).
-
-## `scripts/test`
-
-Runs `pytest`, which picks up the options in `pyproject.toml`: coverage over
-`custom_components/device_link_tools`, branch coverage, a missing-lines report, and
-`--cov-fail-under=95`. **The suite fails if coverage drops below 95%**, so a new code
-path generally needs a new test.
-
-To run a single test while iterating, call pytest directly:
+## `test`
 
 ```bash
-python -m pytest tests/test_services.py -q -o addopts=""   # -o addopts="" drops the coverage gate
+scripts/test [client|integration|all]
 ```
 
-## `scripts/develop`
+Each scope has its own 95 % coverage floor and covers what it owns on its own. Without a bundled client there is a single `integration` scope. To iterate on one test, bypass the gate: `uv run --no-sync pytest tests/test_x.py -q`.
 
-Starts a real Home Assistant against `./config` (created on first run, and gitignored),
-with `custom_components/` on `PYTHONPATH` and `--debug` on. This is how you exercise the
-options flow and the repairs flow by hand — the UI paths tests cover but do not show you.
+## `update_requirements`
 
-## `scripts/update_requirements`
+Walks the manifests reachable from `default_config` and rewrites the generated block of `.devcontainer/requirements-default-config.txt`. Run it **whenever `homeassistant` is upgraded**, review the diff, then run `scripts/setup`.
 
-`configuration.yaml` uses `default_config:`, which pulls in ~55 Home Assistant
-integrations whose Python dependencies `pip install homeassistant` does **not** install.
-This script walks the manifests reachable from `default_config` (following `dependencies`
-and `after_dependencies`), collects their `requirements`, and rewrites the generated block
-in `.devcontainer/requirements-default-config.txt`.
+## `clean_bruno_headers`
 
-Run it **whenever `homeassistant` is upgraded**, review the diff, then run
-`scripts/setup` to install what changed.
-
-The file is kept separate from the root `requirements.txt` so these pins stay out of
-Dependabot's scans. Only the block below the auto-generated marker is rewritten; the
-explanatory header is preserved.
+Only does something when the bundled client ships a Bruno collection in `custom_components/<domain>/<client>/bruno/`; otherwise it says so and exits 0. Bruno records the real response headers of an example (timestamps, Cloudflare metadata, key and token fingerprints), which must not be committed. `--check` reports without writing and exits 1; the pre-commit hook runs it that way whenever a `.bru` file is staged.

@@ -1,5 +1,5 @@
 {
-  "name": "HA Device Link Tools",
+  "name": "Device Link Tools",
   "dockerFile": "./Dockerfile",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {
@@ -15,12 +15,18 @@
   "postCreateCommand": "scripts/setup",
   "mounts": [
     "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,readonly",
-    "type=volume,source=claude-config-device-link-tools,target=/home/vscode/.claude"
+    "type=volume,source=claude-config-ha-device-link-tools,target=/home/vscode/.claude"
   ],
   "runArgs": [
     "--network=host",
     "--env-file=${localWorkspaceFolder}/.devcontainer/.common-env"
   ],
+  "containerEnv": {
+    "UV_LINK_MODE": "copy"
+  },
+  "remoteEnv": {
+    "GITHUB_PERSONAL_ACCESS_TOKEN": "${localEnv:GITHUB_PERSONAL_ACCESS_TOKEN}"
+  },
   "forwardPorts": [8123],
   "portsAttributes": {
     "8123": {
@@ -51,7 +57,7 @@
         },
         "files.eol": "\n",
         "editor.tabSize": 4,
-        "python.pythonPath": "/usr/bin/python3",
+        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
         "python.analysis.autoSearchPaths": false,
         "editor.formatOnPaste": false,
         "editor.formatOnSave": true,
@@ -73,5 +79,6 @@
     }
   },
   "remoteUser": "vscode",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/ha-device-link-tools,type=bind",
   "workspaceFolder": "/workspaces/ha-device-link-tools"
 }

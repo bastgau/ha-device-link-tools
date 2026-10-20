@@ -1,4 +1,6 @@
-PROJECT_NAME=ha-device-link-tools
-PROJECT_ROOT_PATH=/workspaces/ha-device-link-tools
-INTEGRATION_DOMAIN=ha-device_link_tools
+INTEGRATION_DOMAIN=device_link_tools
 INTEGRATION_NAME=Device Link Tools
+CLIENT_PACKAGE=
+CLIENT_TESTS_PATH=
+PRETTIER_EXCLUDES=card
+PYTHON_VERSION=3.14

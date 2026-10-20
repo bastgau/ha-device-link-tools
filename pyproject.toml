@@ -58,6 +58,7 @@ target-version = "py313"
 line-length = 120
 indent-width = 4
 src = ["custom_components/device_link_tools"]
+# Home Assistant test scaffolding some repositories carry in tests/ (absent elsewhere, so harmless).
 exclude = ["tests/testing_config/*", "tests/typing.py"]
 
 [tool.ruff.lint]
@@ -130,6 +131,8 @@ max-complexity = 25
   "S107",    # Possible hardcoded password assigned to a function default
   "SLF001",  # Private member accessed: tests do test internals
 ]
+
+
 
 [tool.pylint.MASTER]
 ignore-paths = ["(.*/)?tests/typing.py", "(.*/)?tests/testing_config/.*"]

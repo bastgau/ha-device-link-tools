@@ -11,18 +11,18 @@ from aiohttp.test_utils import TestClient
 if TYPE_CHECKING:
     # Local import to avoid processing recorder module when running a
     # testcase which does not use the recorder.
-    from homeassistant.components.recorder import Recorder # pyright: ignore[reportPrivateImportUsage]
+    from homeassistant.components.recorder import Recorder
 
 
 class MockHAClientWebSocket(ClientWebSocketResponse):
     """Protocol for a wrapped ClientWebSocketResponse."""
 
-    client: TestClient # pyright: ignore[reportMissingTypeArgument]
+    client: TestClient
     send_json_auto_id: Callable[[dict[str, Any]], Coroutine[Any, Any, None]]
     remove_device: Callable[[str, str], Coroutine[Any, Any, Any]]
 
 
-type ClientSessionGenerator = Callable[..., Coroutine[Any, Any, TestClient]] # pyright: ignore[reportMissingTypeArgument]
+type ClientSessionGenerator = Callable[..., Coroutine[Any, Any, TestClient]]
 type MqttMockPahoClient = MagicMock
 """MagicMock for `paho.mqtt.client.Client`"""
 type MqttMockHAClient = MagicMock  # pylint: disable=invalid-name

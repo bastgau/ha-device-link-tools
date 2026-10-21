@@ -1,7 +1,5 @@
 """Test that manual device links survive the owning integration re-adding entities."""
 
-# pyright: reportOptionalMemberAccess=false
-
 import pytest
 
 from homeassistant.core import HomeAssistant

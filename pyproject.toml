@@ -138,6 +138,11 @@ max-complexity = 25
 ignore-paths = ["(.*/)?tests/typing.py", "(.*/)?tests/testing_config/.*"]
 load-plugins = ["pylint.extensions.docparams"]
 
+[tool.pylint.variables]
+# docparams treats the arguments matching this pattern as ignored and rejects their documentation,
+# while docstring-linter requires every argument to be documented, underscore ones included.
+ignored-argument-names = "^$"
+
 [tool.pylint."MESSAGES CONTROL"]
 # Reasons disabled:
 # format - handled by ruff
@@ -151,6 +156,7 @@ disable = [
   "duplicate-code",
   "format",
   "unexpected-keyword-arg",
+  "unused-argument", # With ignored-argument-names emptied it would flag every underscore argument; ruff ARG covers it
   "used-before-assignment",
   "wrong-import-order",
 ]

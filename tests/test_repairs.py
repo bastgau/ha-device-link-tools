@@ -1,9 +1,5 @@
 """Test the repair flow offered when a recorded link cannot be applied."""
 
-# pyright: reportOptionalMemberAccess=false
-# pyright: reportUnknownParameterType=false
-# pyright: reportUnknownVariableType=false
-
 from http import HTTPStatus
 
 from aiohttp.test_utils import TestClient
@@ -40,7 +36,7 @@ async def unresolved_link(
     await hass.async_block_till_done()
 
 
-async def _async_start_fix_flow(hass: HomeAssistant, hass_client: ClientSessionGenerator) -> tuple[str, TestClient]:  # pyright: ignore[reportMissingTypeArgument]
+async def _async_start_fix_flow(hass: HomeAssistant, hass_client: ClientSessionGenerator) -> tuple[str, TestClient]:
     """Start the repair flow and return its flow id and a client to drive it."""
     assert await async_setup_component(hass, "repairs", {})
     client = await hass_client()

@@ -1,7 +1,5 @@
 """Test managing the recorded links from the options flow."""
 
-# pyright: reportOptionalMemberAccess=false
-
 from typing import Any
 
 import probatio

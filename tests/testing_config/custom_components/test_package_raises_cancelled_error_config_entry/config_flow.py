@@ -8,6 +8,6 @@ class MockConfigFlow(ConfigFlow, domain="test_package_raises_cancelled_error_con
     """Mock config flow."""
 
 
-async def _async_has_devices(hass: HomeAssistant) -> bool:  # pyright: ignore[reportUnusedFunction] # noqa: ARG001
+async def _async_has_devices(hass: HomeAssistant) -> bool: # noqa: ARG001
     """Return if there are devices that can be discovered."""
     return True

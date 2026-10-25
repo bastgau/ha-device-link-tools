@@ -1,8 +1,0 @@
-[run]
-source = custom_components/device_link_tools
-branch = True
-
-[report]
-exclude_lines =
-    pragma: no cover
-    if TYPE_CHECKING:

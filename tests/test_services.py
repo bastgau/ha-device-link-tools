@@ -1,9 +1,5 @@
 """Test the Device Link Tools actions."""
 
-# pyright: reportOptionalMemberAccess=false
-# pyright: reportOptionalSubscript=false
-# pyright: reportUnknownLambdaType=false
-
 from typing import Any
 
 import probatio
@@ -358,7 +354,7 @@ async def test_add_identifier_refused_link(
     monkeypatch.setattr(
         er.EntityRegistry,
         "_ignore_composite_device_id",
-        lambda self, platform, device_id: UNDEFINED,  # pyright: ignore[reportUnknownArgumentType]
+        lambda self, platform, device_id: UNDEFINED,
     )
 
     with pytest.raises(HomeAssistantError) as err:

@@ -29,11 +29,11 @@ Prepare and create a pull request from `develop` to `main`.
 - <bullet point per meaningful change>
 ```
 
-8. Display a full summary to the user:
+7. Display a full summary to the user:
    - Title
    - Base branch → head branch
    - Assignee: bastgau
    - Label
    - Body preview
-9. Ask the user to confirm before creating the PR
-10. On confirmation, create the PR with `gh pr create` assigned to `bastgau` with the chosen label
+8. Ask the user to confirm before creating the PR
+9. On confirmation, create the PR with `gh pr create` assigned to `bastgau` with the chosen label

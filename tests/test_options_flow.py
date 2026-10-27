@@ -344,7 +344,10 @@ async def test_remove_orphans_lists_the_missing_identifiers(
     result = await hass.config_entries.options.async_configure(flow_id, {"next_step_id": "remove_orphans"})
 
     assert result["step_id"] == "remove_orphans"
-    assert _async_offered_links(result) == [{"value": SOLAR_POWER, "label": f"{SOLAR_POWER} (mqtt:8848_5)"}]
+    [option] = _async_offered_links(result)
+    assert option["value"] == SOLAR_POWER
+    assert option["label"].startswith(f"{SOLAR_POWER} (mqtt:8848_5): ")
+    assert "No device matches" in option["label"]
 
 
 @pytest.mark.usefixtures("entity_entry")
@@ -591,3 +594,23 @@ async def test_add_link_keeps_what_was_filled_in_on_error(
     }
     assert suggested == {"entity_id": [SOLAR_POWER], "device_id": "does-not-exist"}
     assert all(marker.default is probatio.UNDEFINED for marker in result["data_schema"].schema)
+
+
+@pytest.mark.usefixtures("entity_entry")
+async def test_remove_orphans_names_the_devices_sharing_the_identifiers(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    device: dr.DeviceEntry,
+    request: pytest.FixtureRequest,
+) -> None:
+    """Test an ambiguous link says several devices match rather than none."""
+    await async_link(hass, SOLAR_POWER, device)
+    # A second device of the owning integration appears afterwards, with the same identifiers.
+    request.getfixturevalue("twin_device")
+
+    flow_id = await _async_menu(hass, config_entry)
+    result = await hass.config_entries.options.async_configure(flow_id, {"next_step_id": "remove_orphans"})
+
+    [option] = _async_offered_links(result)
+    assert "Several devices match" in option["label"]
+    assert "Boiler twin" in option["label"]

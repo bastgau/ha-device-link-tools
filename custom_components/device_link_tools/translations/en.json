@@ -123,7 +123,7 @@
         "data": {
           "entity_id": "Unresolved links"
         },
-        "description": "These entities were linked from here, but their device can no longer be found: it was removed, or its identifiers changed. Dropping a link stops it from being re-applied and clears its repair notice. Leave everything unticked to go back without dropping any. To point one at another device instead, use its repair notice under Settings > Repairs.",
+        "description": "These entities were linked from here, but their device cannot be resolved: it was removed, its identifiers changed, or several devices now carry the same identifiers. Dropping a link stops it from being re-applied and clears its repair notice. Leave everything unticked to go back without dropping any. To point one at another device instead, use its repair notice under Settings > Repairs.",
         "title": "Clean up unresolved links"
       }
     }

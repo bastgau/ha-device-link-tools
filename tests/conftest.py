@@ -121,6 +121,18 @@ def colliding_device(hass: HomeAssistant, device_registry: dr.DeviceRegistry, de
 
 
 @pytest.fixture
+def twin_device(hass: HomeAssistant, device_registry: dr.DeviceRegistry, device: dr.DeviceEntry) -> dr.DeviceEntry:  # pylint: disable=unused-argument
+    """Return a device of a second entry of the same integration carrying the same identifiers."""
+    second_owner = MockConfigEntry(domain="mqtt", title="MQTT 2")
+    second_owner.add_to_hass(hass)
+    return device_registry.async_get_or_create(
+        config_entry_id=second_owner.entry_id,
+        identifiers={("mqtt", "8848_5")},
+        name="Boiler twin",
+    )
+
+
+@pytest.fixture
 def no_device_id() -> None:
     """Return the absence of a device link."""
     return

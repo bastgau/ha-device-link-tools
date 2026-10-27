@@ -147,8 +147,38 @@ def device_label(device: dr.AnyDeviceEntry | None, device_id: str) -> str:
 
 
 @callback
+def _owned_devices(
+    hass: HomeAssistant, identifiers: Identifiers, devices: list[dr.DeviceEntry]
+) -> list[dr.DeviceEntry]:
+    """Return the devices registered by an integration the identifiers belong to.
+
+    Args:
+        hass (HomeAssistant): The Home Assistant instance.
+        identifiers (Identifiers): The device identifiers.
+        devices (list[dr.DeviceEntry]): The devices carrying the identifiers.
+
+    Returns:
+        list[dr.DeviceEntry]: The devices owned by the identifiers' integration.
+
+    """
+    domains = {domain for domain, _ in identifiers}
+    return [
+        device
+        for device in devices
+        if any(
+            (entry := hass.config_entries.async_get_entry(entry_id)) is not None and entry.domain in domains
+            for entry_id in device.config_entries
+        )
+    ]
+
+
+@callback
 def async_resolve_device(hass: HomeAssistant, identifiers: Identifiers) -> dr.DeviceEntry:
     """Resolve identifiers to the single device they designate.
+
+    When several devices carry the identifiers, the one registered by the integration
+    the identifiers belong to wins: a device another integration created with a
+    borrowed identifier (a timer helper, a template) is not the device meant.
 
     Args:
         hass (HomeAssistant): The Home Assistant instance.
@@ -174,6 +204,9 @@ def async_resolve_device(hass: HomeAssistant, identifiers: Identifiers) -> dr.De
             translation_key="device_not_found",
             translation_placeholders={"identifiers": format_identifiers(identifiers)},
         )
+
+    if len(matches) > 1 and len(owned := _owned_devices(hass, identifiers, matches)) == 1:
+        return owned[0]
 
     if len(matches) > 1:
         raise ServiceValidationError(

@@ -236,7 +236,7 @@ async def test_add_identifier_reports_unchanged(hass: HomeAssistant, device: dr.
         pytest.param(
             "add_identifier",
             {"entity_id": SOLAR_POWER, "identifiers": "mqtt:8848_5"},
-            ("colliding_device",),
+            ("twin_device",),
             "identifiers_ambiguous",
             id="two_devices_carry_the_identifiers",
         ),

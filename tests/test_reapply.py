@@ -205,3 +205,20 @@ async def test_issue_cleared_when_link_applies(
     await hass.async_block_till_done()
 
     assert issue_registry.async_get_issue(DOMAIN, ISSUE_ID) is None
+
+
+@pytest.mark.usefixtures("config_entry", "entity_entry")
+async def test_device_of_the_identifiers_owner_wins_a_collision(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    device: dr.DeviceEntry,
+    request: pytest.FixtureRequest,
+) -> None:
+    """Test a device another integration registered with borrowed identifiers is ignored."""
+    await async_link(hass, SOLAR_POWER, device)
+    request.getfixturevalue("colliding_device")
+
+    entity_registry.async_update_entity(SOLAR_POWER, device_id=None)
+    await hass.async_block_till_done()
+
+    assert entity_registry.async_get(SOLAR_POWER).device_id == device.id

@@ -16,7 +16,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import ATTR_DEVICE_ID, ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.selector import (
     DeviceSelector,
@@ -134,8 +134,11 @@ def _async_orphan_options(hass: HomeAssistant, links: dict[str, Identifiers]) ->
     for entity_id, identifiers in links.items():
         try:
             async_resolve_device(hass, identifiers)
-        except HomeAssistantError:
-            options.append(SelectOptionDict(value=entity_id, label=f"{entity_id} ({format_identifiers(identifiers)})"))
+        except ServiceValidationError as err:
+            # The message says whether nothing matches or several devices do.
+            options.append(
+                SelectOptionDict(value=entity_id, label=f"{entity_id} ({format_identifiers(identifiers)}): {err}")
+            )
 
     return sorted(options, key=lambda option: option["label"])
 

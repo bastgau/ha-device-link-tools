@@ -1,10 +1,11 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: v0.17.0
+_commit: v0.22.0
 _src_path: gh:bastgau/ha-dev-environment
 author_email: contact@bastiengautier.com
 author_name: Bastien Gautier
 client_package: ''
 copyright_year: 2026
+coverage_fail_under: 95
 description: Home Assistant custom integration to link existing entities to an existing
     device, for entities whose integration offers no device option. Links are recorded
     and re-applied, so they survive restarts and reloads.

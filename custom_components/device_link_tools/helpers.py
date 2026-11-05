@@ -165,10 +165,8 @@ def _owned_devices(
     return [
         device
         for device in devices
-        if any(
-            (entry := hass.config_entries.async_get_entry(entry_id)) is not None and entry.domain in domains
-            for entry_id in device.config_entries
-        )
+        if (entry := hass.config_entries.async_get_entry(device.config_entry_id)) is not None
+        and entry.domain in domains
     ]
 
 
